@@ -39,6 +39,12 @@
             </svg>
             Campagnes
           </button>
+          <button class="nav-item" data-view="bulk">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            Lancement en masse
+          </button>
           <button class="nav-item" data-view="automation">
             <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polyline points="23 4 23 10 17 10"></polyline>
@@ -158,6 +164,76 @@
                   </tbody>
                 </table>
               </div>
+            </div>
+          </section>
+
+          <!-- ============ LANCEMENT EN MASSE ============ -->
+          <section class="view hidden" id="view-bulk">
+            <div class="card">
+              <div class="card-head">
+                <h2>Lancement en masse</h2>
+              </div>
+              <div class="note">
+                Choisissez une <strong>campagne modèle</strong> (elle porte vos créatives / Spark Ads / ciblage).
+                Chaque ligne crée une nouvelle campagne avec son propre <strong>lien</strong>, <strong>budget</strong> et
+                <strong>heure de démarrage</strong>. TikTok démarre chaque campagne à l'heure indiquée.
+                Par sécurité, tout est créé en <strong>PAUSE</strong> par défaut.
+              </div>
+
+              <div class="grid">
+                <div class="field">
+                  <label>Campagne modèle</label>
+                  <select id="bulk-template"><option value="">sélectionner</option></select>
+                </div>
+                <div class="field">
+                  <label>Statut à la création</label>
+                  <select id="bulk-status">
+                    <option value="PAUSE" selected>PAUSE (sécurité)</option>
+                    <option value="ACTIVE">ACTIVE / programmée</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="quick-row">
+                <span class="muted">Modèles rapides :</span>
+                <button class="btn ghost sm" data-quick="1">1 ligne</button>
+                <button class="btn ghost sm" data-quick="10">10 lignes</button>
+                <button class="btn ghost sm" data-quick="50">50 lignes</button>
+                <button class="btn ghost sm" data-quick="100">100 lignes</button>
+                <span class="sep"></span>
+                <label class="inline">Espacer de
+                  <input type="number" id="bulk-gap" min="0" step="0.5" value="2" style="width:70px" /> h
+                </label>
+                <label class="inline">à partir de
+                  <input type="datetime-local" id="bulk-start" style="width:210px" />
+                </label>
+                <button class="btn ghost sm" id="bulk-apply-schedule">Appliquer les horaires</button>
+              </div>
+
+              <div class="table-wrap">
+                <table class="data-table" id="bulk-table">
+                  <thead>
+                    <tr>
+                      <th style="width:36px">#</th>
+                      <th>Nom de la campagne</th>
+                      <th>Lien de destination</th>
+                      <th style="width:110px">Budget</th>
+                      <th style="width:210px">Démarrage</th>
+                      <th style="width:44px"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="bulk-body"></tbody>
+                </table>
+              </div>
+
+              <div class="row">
+                <button class="btn ghost" id="bulk-add">+ Ajouter une ligne</button>
+                <button class="btn ghost" id="bulk-clear">Vider</button>
+                <span style="flex:1"></span>
+                <button class="btn" id="bulk-launch"><strong id="bulk-count">0</strong>&nbsp; TOUT LANCER</button>
+              </div>
+
+              <div id="bulk-result" class="dup-result hidden"></div>
             </div>
           </section>
 

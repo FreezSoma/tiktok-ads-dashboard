@@ -15,6 +15,7 @@ const state = {
 const VIEW_TITLES = {
   overview: "Vue d'ensemble",
   campaigns: 'Campagnes',
+  bulk: 'Lancement en masse',
   automation: 'Automatisation',
   logs: 'Journal',
 };
@@ -354,15 +355,18 @@ function renderDuplicateResult(result) {
 
 // --- Automation ----------------------------------------------------------
 function fillTemplateSelect(campaigns) {
-  const sel = $('#template-select');
-  const current = sel.value;
-  sel.innerHTML = '<option value="">sélectionner</option>';
-  for (const c of campaigns) {
-    const o = el('option', null, c.campaign_name);
-    o.value = c.campaign_id;
-    sel.appendChild(o);
+  for (const id of ['#template-select', '#bulk-template']) {
+    const sel = $(id);
+    if (!sel) continue;
+    const current = sel.value;
+    sel.innerHTML = '<option value="">sélectionner</option>';
+    for (const c of campaigns) {
+      const o = el('option', null, c.campaign_name);
+      o.value = c.campaign_id;
+      sel.appendChild(o);
+    }
+    if (current) sel.value = current;
   }
-  if (current) sel.value = current;
 }
 
 async function loadAutomationStatus() {
@@ -441,6 +445,173 @@ async function toggleAutomation(on) {
   refreshLogs();
 }
 
+// --- Bulk launch ---------------------------------------------------------
+function bulkAddRow(data = {}) {
+  const tbody = $('#bulk-body');
+  const tr = el('tr');
+
+  const idx = el('td', 'idx');
+  tr.appendChild(idx);
+
+  const mkInput = (type, ph, val, cls) => {
+    const i = document.createElement('input');
+    i.type = type;
+    if (ph) i.placeholder = ph;
+    if (val != null) i.value = val;
+    if (cls) i.className = cls;
+    return i;
+  };
+
+  const nameTd = el('td');
+  nameTd.appendChild(mkInput('text', 'ex. CBO 10h', data.name || '', 'b-name'));
+  tr.appendChild(nameTd);
+
+  const linkTd = el('td');
+  linkTd.appendChild(mkInput('url', 'https://…', data.link || '', 'b-link'));
+  tr.appendChild(linkTd);
+
+  const budgetTd = el('td');
+  budgetTd.appendChild(mkInput('number', '50', data.budget || '', 'b-budget'));
+  tr.appendChild(budgetTd);
+
+  const startTd = el('td');
+  startTd.appendChild(mkInput('datetime-local', '', data.start || '', 'b-start'));
+  tr.appendChild(startTd);
+
+  const delTd = el('td');
+  const del = el('button', 'del-row', '×');
+  del.addEventListener('click', () => { tr.remove(); bulkRenumber(); });
+  delTd.appendChild(del);
+  tr.appendChild(delTd);
+
+  tbody.appendChild(tr);
+  bulkRenumber();
+}
+
+function bulkRenumber() {
+  const rows = $$('#bulk-body tr');
+  rows.forEach((tr, i) => { tr.querySelector('.idx').textContent = i + 1; });
+  $('#bulk-count').textContent = rows.length;
+}
+
+function bulkClear() {
+  $('#bulk-body').innerHTML = '';
+  bulkRenumber();
+}
+
+function bulkQuickFill(n) {
+  bulkClear();
+  for (let i = 0; i < n; i += 1) bulkAddRow({ name: `Campagne ${i + 1}` });
+  applyBulkSchedule();
+}
+
+// Fill each row's start time: base start + i * gap hours.
+function applyBulkSchedule() {
+  const rows = $$('#bulk-body tr');
+  const gap = parseFloat($('#bulk-gap').value) || 0;
+  let base = $('#bulk-start').value ? new Date($('#bulk-start').value) : new Date();
+  if (Number.isNaN(base.getTime())) base = new Date();
+  rows.forEach((tr, i) => {
+    const d = new Date(base.getTime() + i * gap * 3600 * 1000);
+    tr.querySelector('.b-start').value = toLocalInput(d);
+  });
+}
+
+function toLocalInput(d) {
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+// datetime-local "YYYY-MM-DDTHH:mm" -> TikTok "YYYY-MM-DD HH:mm:ss"
+function toTikTokTime(v) {
+  if (!v) return undefined;
+  return v.replace('T', ' ') + ':00';
+}
+
+function collectBulkItems() {
+  return $$('#bulk-body tr').map((tr) => ({
+    name: tr.querySelector('.b-name').value.trim() || undefined,
+    link: tr.querySelector('.b-link').value.trim() || undefined,
+    budget: tr.querySelector('.b-budget').value ? Number(tr.querySelector('.b-budget').value) : undefined,
+    start_time: toTikTokTime(tr.querySelector('.b-start').value),
+  }));
+}
+
+async function launchBulk() {
+  const btn = $('#bulk-launch');
+  const template = $('#bulk-template').value;
+  const status = $('#bulk-status').value;
+  const items = collectBulkItems();
+  const result = $('#bulk-result');
+
+  if (!template) {
+    result.classList.remove('hidden');
+    result.innerHTML = '<h4 class="fail">Choisissez une campagne modèle.</h4>';
+    return;
+  }
+  if (!items.length) {
+    result.classList.remove('hidden');
+    result.innerHTML = '<h4 class="fail">Ajoutez au moins une ligne.</h4>';
+    return;
+  }
+
+  btn.disabled = true;
+  const prev = btn.innerHTML;
+  btn.textContent = 'Création en cours…';
+  result.classList.remove('hidden');
+  result.innerHTML = '<p class="muted">Lancement de ' + items.length + ' campagne(s)…</p>';
+
+  const idem = `bulk-${template}-${items.length}-${Date.now()}`;
+  try {
+    const data = await api('/bulk-launch', {
+      method: 'POST',
+      headers: { 'Idempotency-Key': idem },
+      body: { advertiser_id: state.accountId, template_campaign_id: template, status, items },
+    });
+    renderBulkResult(data);
+    await Promise.all([loadCampaigns(), loadLatest(), refreshLogs()]);
+  } catch (e) {
+    result.innerHTML = `<h4 class="fail">Échec</h4><p>${e.message}</p>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = prev;
+    bulkRenumber();
+  }
+}
+
+function renderBulkResult(data) {
+  const r = $('#bulk-result');
+  r.classList.remove('hidden');
+  r.innerHTML = '';
+  r.appendChild(
+    el(
+      'h4',
+      data.success ? 'ok' : 'fail',
+      data.success
+        ? `Succès : ${data.created}/${data.requested} campagne(s) créée(s)`
+        : `Terminé avec erreurs : ${data.created}/${data.requested} campagne(s) créée(s)`
+    )
+  );
+  for (const it of data.items) {
+    const block = el('div', 'copy-block');
+    const head = `#${it.index} — ${it.name}` + (it.start_time ? ` · démarre ${it.start_time}` : '');
+    block.appendChild(el('div', it.success ? 'ok' : 'fail', head));
+    const ul = el('ul');
+    ul.appendChild(el('li', null, `Campagne créée : ${it.campaign_created ? 'oui' : 'non'}`));
+    ul.appendChild(el('li', null, `Ad Groups : ${it.adgroups_created} · Ads : ${it.ads_created} · Spark Ads : ${it.spark_ads_created}`));
+    if (it.link) ul.appendChild(el('li', null, `Lien : ${it.link}`));
+    block.appendChild(ul);
+    if (it.failures && it.failures.length) {
+      const fl = el('ul');
+      for (const f of it.failures) {
+        const code = f.tiktok_code ? ` [code ${f.tiktok_code}]` : '';
+        fl.appendChild(el('li', 'fail', `${f.level} · ${f.name || ''} : ${f.message}${code}`));
+      }
+      block.appendChild(fl);
+    }
+    r.appendChild(block);
+  }
+}
+
 // --- Logs ----------------------------------------------------------------
 async function refreshLogs() {
   try {
@@ -477,6 +648,19 @@ function wireStaticHandlers() {
 
   $('#automation-save').addEventListener('click', saveAutomation);
   $('#automation-toggle').addEventListener('change', (e) => toggleAutomation(e.target.checked));
+
+  // Bulk launch
+  $('#bulk-add').addEventListener('click', () => bulkAddRow());
+  $('#bulk-clear').addEventListener('click', bulkClear);
+  $('#bulk-launch').addEventListener('click', launchBulk);
+  $('#bulk-apply-schedule').addEventListener('click', applyBulkSchedule);
+  $$('[data-quick]').forEach((b) => b.addEventListener('click', () => bulkQuickFill(Number(b.dataset.quick))));
+  // Default base start = now, and seed 3 rows.
+  $('#bulk-start').value = toLocalInput(new Date());
+  bulkAddRow({ name: 'Campagne 1' });
+  bulkAddRow({ name: 'Campagne 2' });
+  bulkAddRow({ name: 'Campagne 3' });
+  applyBulkSchedule();
 }
 
 boot();

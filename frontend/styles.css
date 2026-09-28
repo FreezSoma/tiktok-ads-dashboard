@@ -228,6 +228,22 @@ input:focus, select:focus { outline: none; border-color: var(--blue-500); box-sh
 .dup-result ul { margin: 6px 0; padding-left: 18px; }
 .copy-block { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
 
+/* ================= BULK LAUNCH ================= */
+.quick-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin: 4px 0 18px; padding: 12px; background: var(--blue-50);
+  border: 1px solid var(--blue-100); border-radius: 10px;
+}
+.quick-row .sep { flex: 1; }
+.inline { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.inline input { padding: 7px 9px; }
+#bulk-table td { padding: 6px 8px; vertical-align: middle; }
+#bulk-table input { padding: 8px 9px; }
+#bulk-table td.idx { color: var(--muted); font-weight: 700; text-align: center; }
+.del-row { background: var(--err-bg); color: var(--err); border: none; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 16px; font-weight: 700; }
+.del-row:hover { background: #f9d4d8; }
+#bulk-count { background: rgba(255,255,255,0.25); border-radius: 6px; padding: 1px 8px; }
+
 /* ================= HELPERS ================= */
 .muted { color: var(--muted); }
 .center { text-align: center; }
