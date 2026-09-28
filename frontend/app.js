@@ -317,7 +317,7 @@ function fillTemplateSelect(campaigns) {
 
 async function loadAutomationStatus() {
   try {
-    const s = await api('/automation/status');
+    const s = await api('/automation?action=status');
     applyAutomationStatus(s);
   } catch {
     /* automation is optional; ignore */
@@ -363,7 +363,7 @@ async function saveAutomation() {
   const btn = $('#automation-save');
   btn.disabled = true;
   try {
-    const s = await api('/automation/config', { method: 'POST', body: automationBody() });
+    const s = await api('/automation?action=config', { method: 'POST', body: automationBody() });
     applyAutomationStatus(s);
     $('#automation-info').textContent = 'Configuration enregistrée.';
   } catch (e) {
@@ -381,10 +381,10 @@ async function toggleAutomation(on) {
         $('#automation-info').textContent = 'Choisissez une campagne modèle avant d’activer.';
         return;
       }
-      const s = await api('/automation/start', { method: 'POST', body: automationBody() });
+      const s = await api('/automation?action=start', { method: 'POST', body: automationBody() });
       applyAutomationStatus(s);
     } else {
-      const s = await api('/automation/stop', { method: 'POST' });
+      const s = await api('/automation?action=stop', { method: 'POST' });
       applyAutomationStatus(s);
     }
   } catch (e) {
