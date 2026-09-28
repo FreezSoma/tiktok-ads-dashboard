@@ -1,0 +1,20 @@
+{
+  "name": "tiktok-ads-dashboard",
+  "version": "1.0.0",
+  "description": "TikTok Ads Dashboard — Vercel serverless API (/api) + static frontend. Full campaign duplication (incl. Spark Ads) and automation via Vercel Cron + Upstash Redis.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "vercel": "^37.0.0"
+  }
+}

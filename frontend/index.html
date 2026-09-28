@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TikTok Ads Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h1>TikTok Ads Dashboard</h1>
+      <div class="account-picker">
+        <label for="account-select">Compte publicitaire</label>
+        <select id="account-select">
+          <option value="">Chargement…</option>
+        </select>
+      </div>
+    </header>
+
+    <div id="config-banner" class="banner hidden"></div>
+
+    <main class="container">
+      <!-- DERNIÈRE CAMPAGNE -->
+      <section class="card">
+        <h2>Dernière campagne</h2>
+        <div id="latest-campaign" class="latest">
+          <p class="muted">Sélectionnez un compte pour afficher la dernière campagne.</p>
+        </div>
+      </section>
+
+      <!-- AUTOMATISATION -->
+      <section class="card">
+        <div class="card-head">
+          <h2>Automatisation</h2>
+          <label class="switch">
+            <input type="checkbox" id="automation-toggle" />
+            <span class="slider"></span>
+            <span id="automation-state" class="switch-label">OFF</span>
+          </label>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label>Campagne modèle</label>
+            <select id="template-select"><option value="">sélectionner</option></select>
+          </div>
+          <div class="field">
+            <label>Campagnes par lancement</label>
+            <input type="number" id="auto-per-run" min="1" max="100" value="3" />
+          </div>
+          <div class="field">
+            <label>Toutes les (heures)</label>
+            <input type="number" id="auto-interval" min="0.25" step="0.25" value="1" />
+          </div>
+          <div class="field">
+            <label>Budget par campagne</label>
+            <input type="number" id="auto-budget" min="1" value="50" />
+          </div>
+          <div class="field">
+            <label>Heure de début</label>
+            <input type="number" id="auto-start" min="0" max="23" value="9" />
+          </div>
+          <div class="field">
+            <label>Heure de fin</label>
+            <input type="number" id="auto-end" min="0" max="24" value="21" />
+          </div>
+          <div class="field">
+            <label>Maximum / jour</label>
+            <input type="number" id="auto-max" min="1" value="30" />
+          </div>
+          <div class="field">
+            <label>Statut des campagnes créées</label>
+            <select id="auto-status">
+              <option value="PAUSE" selected>PAUSE (sécurité)</option>
+              <option value="ACTIVE">ACTIVE</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <button id="automation-save" class="btn">ENREGISTRER</button>
+          <span id="automation-info" class="muted"></span>
+        </div>
+      </section>
+
+      <!-- CAMPAGNES -->
+      <section class="card">
+        <div class="card-head">
+          <h2>Campagnes</h2>
+          <button id="refresh-campaigns" class="btn btn-light">Rafraîchir</button>
+        </div>
+        <div id="metrics-warning" class="banner warn hidden"></div>
+        <div class="table-wrap">
+          <table class="campaigns">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Statut</th>
+                <th>Budget</th>
+                <th>Dépenses</th>
+                <th>Ventes</th>
+                <th>CA</th>
+                <th>ROAS</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="campaigns-body">
+              <tr><td colspan="8" class="muted center">Sélectionnez un compte.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- LOGS -->
+      <section class="card">
+        <div class="card-head">
+          <h2>Journal (logs)</h2>
+          <button id="refresh-logs" class="btn btn-light">Rafraîchir</button>
+        </div>
+        <pre id="logs" class="logs">—</pre>
+      </section>
+    </main>
+
+    <!-- Duplicate modal -->
+    <div id="dup-modal" class="modal hidden">
+      <div class="modal-box">
+        <div class="modal-head">
+          <h3>Dupliquer la campagne</h3>
+          <button id="dup-close" class="icon-btn">×</button>
+        </div>
+        <p id="dup-source" class="muted"></p>
+
+        <label>Nombre de copies</label>
+        <div class="chips" id="dup-copy-chips">
+          <button type="button" class="chip" data-n="1">1</button>
+          <button type="button" class="chip" data-n="2">2</button>
+          <button type="button" class="chip" data-n="3">3</button>
+          <button type="button" class="chip" data-n="5">5</button>
+          <button type="button" class="chip" data-n="10">10</button>
+        </div>
+        <input type="number" id="dup-copies" min="1" max="100" value="1" />
+
+        <label>Budget des nouvelles campagnes (laisser vide = identique)</label>
+        <input type="number" id="dup-budget" min="1" placeholder="ex. 50" />
+
+        <label>Nom des copies (utilisez {n} pour le numéro)</label>
+        <input type="text" id="dup-name" placeholder="ex. CBO {n}" />
+
+        <label>Statut</label>
+        <div class="chips">
+          <label class="radio"><input type="radio" name="dup-status" value="PAUSE" checked /> PAUSE</label>
+          <label class="radio"><input type="radio" name="dup-status" value="ACTIVE" /> ACTIVE</label>
+        </div>
+
+        <div class="modal-actions">
+          <button id="dup-submit" class="btn">DUPLIQUER</button>
+        </div>
+
+        <div id="dup-result" class="dup-result hidden"></div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

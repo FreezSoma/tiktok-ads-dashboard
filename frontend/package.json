@@ -1,0 +1,6 @@
+{
+  "name": "tiktok-ads-dashboard-frontend",
+  "version": "1.0.0",
+  "description": "Static frontend for the TikTok Ads Dashboard. Served by Vercel; no build step. For local dev, prefer `vercel dev` from the project root so /api works.",
+  "private": true
+}
