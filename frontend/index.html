@@ -7,119 +7,212 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header class="header">
-      <h1>TikTok Ads Dashboard</h1>
-      <div class="account-picker">
-        <label for="account-select">Compte publicitaire</label>
-        <select id="account-select">
-          <option value="">Chargement…</option>
-        </select>
+    <div class="app">
+      <!-- SIDEBAR -->
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand-logo">T</div>
+          <div class="brand-text">
+            <strong>TikTok Ads</strong>
+            <span>Dashboard</span>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <button class="nav-item active" data-view="overview">
+            <span class="nav-ico">▦</span> Vue d'ensemble
+          </button>
+          <button class="nav-item" data-view="campaigns">
+            <span class="nav-ico">≣</span> Campagnes
+          </button>
+          <button class="nav-item" data-view="automation">
+            <span class="nav-ico">⟳</span> Automatisation
+          </button>
+          <button class="nav-item" data-view="logs">
+            <span class="nav-ico">◷</span> Journal
+          </button>
+        </nav>
+
+        <div class="sidebar-foot">
+          <div class="status-dot" id="conn-dot"></div>
+          <span id="conn-text">Connexion…</span>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <div class="main">
+        <!-- TOPBAR -->
+        <header class="topbar">
+          <button class="burger" id="burger" aria-label="Menu">☰</button>
+          <h1 id="view-title">Vue d'ensemble</h1>
+          <div class="topbar-right">
+            <div class="account-picker">
+              <label for="account-select">Compte publicitaire</label>
+              <select id="account-select">
+                <option value="">Chargement…</option>
+              </select>
+            </div>
+          </div>
+        </header>
+
+        <div id="config-banner" class="banner hidden"></div>
+
+        <main class="content">
+          <!-- ============ VUE D'ENSEMBLE ============ -->
+          <section class="view" id="view-overview">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <span class="stat-label">Dépenses totales</span>
+                <span class="stat-value" id="stat-spend">—</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Chiffre d'affaires</span>
+                <span class="stat-value" id="stat-revenue">—</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Conversions</span>
+                <span class="stat-value" id="stat-conversions">—</span>
+              </div>
+              <div class="stat-card accent">
+                <span class="stat-label">ROAS moyen</span>
+                <span class="stat-value" id="stat-roas">—</span>
+              </div>
+            </div>
+
+            <div class="card latest-card">
+              <div class="card-head">
+                <h2>Dernière campagne</h2>
+              </div>
+              <div id="latest-campaign" class="latest">
+                <p class="muted">Sélectionnez un compte pour afficher la dernière campagne.</p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <h2>Aperçu des campagnes</h2>
+                <button class="btn ghost" data-view="campaigns">Tout voir →</button>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Nom</th><th>Statut</th><th>Budget</th><th>ROAS</th><th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="overview-campaigns-body">
+                    <tr><td colspan="5" class="muted center">—</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============ CAMPAGNES ============ -->
+          <section class="view hidden" id="view-campaigns">
+            <div class="card">
+              <div class="card-head">
+                <h2>Toutes les campagnes</h2>
+                <button id="refresh-campaigns" class="btn ghost">Rafraîchir</button>
+              </div>
+              <div id="metrics-warning" class="banner warn hidden"></div>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Nom</th>
+                      <th>Statut</th>
+                      <th>Budget</th>
+                      <th>Dépenses</th>
+                      <th>Ventes</th>
+                      <th>CA</th>
+                      <th>ROAS</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="campaigns-body">
+                    <tr><td colspan="8" class="muted center">Sélectionnez un compte.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============ AUTOMATISATION ============ -->
+          <section class="view hidden" id="view-automation">
+            <div class="card">
+              <div class="card-head">
+                <h2>Automatisation</h2>
+                <label class="switch">
+                  <input type="checkbox" id="automation-toggle" />
+                  <span class="slider"></span>
+                  <span id="automation-state" class="switch-label">OFF</span>
+                </label>
+              </div>
+
+              <div class="note" id="automation-note">
+                L'automatisation planifiée nécessite une base Upstash Redis + un cron Vercel.
+                La configuration ci-dessous est enregistrée et prête à l'emploi.
+              </div>
+
+              <div class="grid">
+                <div class="field">
+                  <label>Campagne modèle</label>
+                  <select id="template-select"><option value="">sélectionner</option></select>
+                </div>
+                <div class="field">
+                  <label>Campagnes par lancement</label>
+                  <input type="number" id="auto-per-run" min="1" max="100" value="3" />
+                </div>
+                <div class="field">
+                  <label>Toutes les (heures)</label>
+                  <input type="number" id="auto-interval" min="0.25" step="0.25" value="1" />
+                </div>
+                <div class="field">
+                  <label>Budget par campagne</label>
+                  <input type="number" id="auto-budget" min="1" value="50" />
+                </div>
+                <div class="field">
+                  <label>Heure de début</label>
+                  <input type="number" id="auto-start" min="0" max="23" value="9" />
+                </div>
+                <div class="field">
+                  <label>Heure de fin</label>
+                  <input type="number" id="auto-end" min="0" max="24" value="21" />
+                </div>
+                <div class="field">
+                  <label>Maximum / jour</label>
+                  <input type="number" id="auto-max" min="1" value="30" />
+                </div>
+                <div class="field">
+                  <label>Statut des campagnes créées</label>
+                  <select id="auto-status">
+                    <option value="PAUSE" selected>PAUSE (sécurité)</option>
+                    <option value="ACTIVE">ACTIVE</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <button id="automation-save" class="btn">ENREGISTRER</button>
+                <span id="automation-info" class="muted"></span>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============ JOURNAL ============ -->
+          <section class="view hidden" id="view-logs">
+            <div class="card">
+              <div class="card-head">
+                <h2>Journal (logs)</h2>
+                <button id="refresh-logs" class="btn ghost">Rafraîchir</button>
+              </div>
+              <pre id="logs" class="logs">—</pre>
+            </div>
+          </section>
+        </main>
       </div>
-    </header>
-
-    <div id="config-banner" class="banner hidden"></div>
-
-    <main class="container">
-      <!-- DERNIÈRE CAMPAGNE -->
-      <section class="card">
-        <h2>Dernière campagne</h2>
-        <div id="latest-campaign" class="latest">
-          <p class="muted">Sélectionnez un compte pour afficher la dernière campagne.</p>
-        </div>
-      </section>
-
-      <!-- AUTOMATISATION -->
-      <section class="card">
-        <div class="card-head">
-          <h2>Automatisation</h2>
-          <label class="switch">
-            <input type="checkbox" id="automation-toggle" />
-            <span class="slider"></span>
-            <span id="automation-state" class="switch-label">OFF</span>
-          </label>
-        </div>
-
-        <div class="grid">
-          <div class="field">
-            <label>Campagne modèle</label>
-            <select id="template-select"><option value="">sélectionner</option></select>
-          </div>
-          <div class="field">
-            <label>Campagnes par lancement</label>
-            <input type="number" id="auto-per-run" min="1" max="100" value="3" />
-          </div>
-          <div class="field">
-            <label>Toutes les (heures)</label>
-            <input type="number" id="auto-interval" min="0.25" step="0.25" value="1" />
-          </div>
-          <div class="field">
-            <label>Budget par campagne</label>
-            <input type="number" id="auto-budget" min="1" value="50" />
-          </div>
-          <div class="field">
-            <label>Heure de début</label>
-            <input type="number" id="auto-start" min="0" max="23" value="9" />
-          </div>
-          <div class="field">
-            <label>Heure de fin</label>
-            <input type="number" id="auto-end" min="0" max="24" value="21" />
-          </div>
-          <div class="field">
-            <label>Maximum / jour</label>
-            <input type="number" id="auto-max" min="1" value="30" />
-          </div>
-          <div class="field">
-            <label>Statut des campagnes créées</label>
-            <select id="auto-status">
-              <option value="PAUSE" selected>PAUSE (sécurité)</option>
-              <option value="ACTIVE">ACTIVE</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row">
-          <button id="automation-save" class="btn">ENREGISTRER</button>
-          <span id="automation-info" class="muted"></span>
-        </div>
-      </section>
-
-      <!-- CAMPAGNES -->
-      <section class="card">
-        <div class="card-head">
-          <h2>Campagnes</h2>
-          <button id="refresh-campaigns" class="btn btn-light">Rafraîchir</button>
-        </div>
-        <div id="metrics-warning" class="banner warn hidden"></div>
-        <div class="table-wrap">
-          <table class="campaigns">
-            <thead>
-              <tr>
-                <th>Nom</th>
-                <th>Statut</th>
-                <th>Budget</th>
-                <th>Dépenses</th>
-                <th>Ventes</th>
-                <th>CA</th>
-                <th>ROAS</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="campaigns-body">
-              <tr><td colspan="8" class="muted center">Sélectionnez un compte.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- LOGS -->
-      <section class="card">
-        <div class="card-head">
-          <h2>Journal (logs)</h2>
-          <button id="refresh-logs" class="btn btn-light">Rafraîchir</button>
-        </div>
-        <pre id="logs" class="logs">—</pre>
-      </section>
-    </main>
+    </div>
 
     <!-- Duplicate modal -->
     <div id="dup-modal" class="modal hidden">
@@ -153,7 +246,7 @@
         </div>
 
         <div class="modal-actions">
-          <button id="dup-submit" class="btn">DUPLIQUER</button>
+          <button id="dup-submit" class="btn full">DUPLIQUER</button>
         </div>
 
         <div id="dup-result" class="dup-result hidden"></div>
